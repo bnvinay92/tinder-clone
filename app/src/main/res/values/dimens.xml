@@ -5,4 +5,6 @@
     <dimen name="drawer_stylelist_subtitle_height">48dp</dimen>
     <dimen name="drawer_stylelist_subtitle_padding_bottom">4dp</dimen>
     <dimen name="drawer_stylelist_radiogroup_height">72dp</dimen>
+    <dimen name="cardstack_horizontal_margin">4dp</dimen>
+    <dimen name="cardview_radius">6dp</dimen>
 </resources>

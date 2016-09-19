@@ -17,7 +17,7 @@
             android:layout_height="?attr/actionBarSize"
             android:layout_gravity="start|center_vertical"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:background="@null"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/drawer_stylelist_ibutton_close_contentDescription"
             app:srcCompat="@drawable/ic_cross_black_24dp" />
 
@@ -25,7 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/stylelist_filters"
+            android:text="@string/drawer_stylelist_tview_filters_text"
             android:textAppearance="@style/TextAppearance.AppCompat.Title" />
     </FrameLayout>
 
@@ -46,12 +46,14 @@
     </FrameLayout>
 
     <RadioGroup
+        android:id="@+id/drawer_stylelist_rgroup_hairlength"
         android:layout_width="match_parent"
         android:layout_height="@dimen/drawer_stylelist_radiogroup_height"
         android:orientation="horizontal"
         android:padding="@dimen/activity_horizontal_margin">
 
         <RadioButton
+            android:id="@+id/drawer_stylelist_rbutton_short"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -63,6 +65,7 @@
             android:layout_weight="1" />
 
         <RadioButton
+            android:id="@+id/drawer_stylelist_rbutton_medium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -74,6 +77,7 @@
             android:layout_weight="1" />
 
         <RadioButton
+            android:id="@+id/drawer_stylelist_rbutton_long"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"

@@ -8,6 +8,7 @@ import android.support.design.widget.Snackbar;
 import com.google.firebase.FirebaseNetworkException;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
 
 import butterknife.BindView;
 import in.nyuyu.android.R;
@@ -37,6 +38,7 @@ public class SplashActivity extends NyuyuActivity {
                             if (Once.beenDone(Once.THIS_APP_INSTALL, Scopes.onboarding(userId))) {
                                 startActivity(new Intent(this, StyleListActivity.class));
                             } else {
+                                FirebaseDatabase.getInstance().getReference("sessions").child(userId).keepSynced(true);
                                 startActivity(new Intent(this, OnboardingActivity.class));
                             }
                             finish();

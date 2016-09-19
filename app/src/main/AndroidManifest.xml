@@ -21,7 +21,7 @@
         </activity>
         <activity android:name=".style.StyleListActivity" />
         <activity android:name=".onboarding.OnboardingActivity" />
-        <activity android:name=".LikedStyleListActivity"></activity>
+        <activity android:name=".style.LikedStyleListActivity"></activity>
     </application>
 
 </manifest>

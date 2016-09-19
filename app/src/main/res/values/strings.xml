@@ -2,7 +2,7 @@
     <string name="app_name">Nyuyu</string>
     <string name="menu_stylelist_shortlist_title">Shortlist</string>
     <string name="menu_stylelist_filter_title">Filter</string>
-    <string name="stylelist_filters">Filters</string>
+    <string name="drawer_stylelist_tview_filters_text">Filters</string>
     <string name="drawer_stylelist_tview_gender_text">Gender</string>
     <string name="drawer_stylelist_tview_hairlength_text">Hair Length</string>
     <string name="drawer_stylelist_tview_theme_text">Theme</string>

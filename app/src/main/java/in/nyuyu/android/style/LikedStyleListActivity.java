@@ -1,7 +1,9 @@
-package in.nyuyu.android;
+package in.nyuyu.android.style;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import in.nyuyu.android.R;
 
 public class LikedStyleListActivity extends AppCompatActivity {
 
