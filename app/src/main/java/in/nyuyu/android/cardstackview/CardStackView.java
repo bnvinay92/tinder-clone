@@ -39,6 +39,7 @@ public class CardStackView extends RelativeLayout {
     public interface CardStackEventListener {
         void onDrag(float percentage);
         void onSwipe(int index, Direction direction);
+        void onSwipeDenied(Direction direction);
         void onTapUp(int index);
     }
 
@@ -125,7 +126,7 @@ public class CardStackView extends RelativeLayout {
                             } else {
                                 cardAnimator.moveToOrigin();
                                 if (cardStackEventListener != null)
-                                    cardStackEventListener.onSwipe(topIndex, direction);
+                                    cardStackEventListener.onSwipeDenied(direction);
                             }
                         }
                     }
