@@ -126,7 +126,7 @@ public class CardStackView extends RelativeLayout {
                             } else {
                                 cardAnimator.moveToOrigin();
                                 if (cardStackEventListener != null)
-                                    cardStackEventListener.onSwipeDenied(direction);
+                                cardStackEventListener.onSwipeDenied(direction);
                             }
                         }
                     }

@@ -5,6 +5,7 @@ import com.google.firebase.database.DatabaseReference;
 import javax.inject.Inject;
 
 import in.nyuyu.android.commons.Rx;
+import in.nyuyu.android.style.values.Swipe;
 import rx.Single;
 
 /**
@@ -20,8 +21,16 @@ public class LastSeenStyleIdQuery {
     }
 
     public Single<String> execute(String userId, String styleListFilterParameters) {
-        return Rx.once(databaseReference.child(String.format(PATH, userId, styleListFilterParameters)))
-                .map(snapshot -> snapshot.getValue(Long.class))
-                .map(styleId -> styleId == null ? "0" : String.valueOf(styleId + 1));
+        return Rx.once(databaseReference.child(path(userId, styleListFilterParameters)))
+                .map(snapshot -> snapshot.getValue(Swipe.class))
+                .map(swipe -> swipe == null ? "0" : String.valueOf(swipe.getItem().getId() + 1));
+    }
+
+    public void update(String userId, String styleListFilterParameters, Swipe swipe) {
+        databaseReference.child(path(userId, styleListFilterParameters)).setValue(swipe);
+    }
+
+    public static String path(String userId, String styleListFilterParameters) {
+        return String.format(PATH, userId, styleListFilterParameters);
     }
 }

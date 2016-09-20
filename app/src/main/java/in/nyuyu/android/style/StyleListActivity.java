@@ -6,12 +6,14 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.f2prateek.rx.preferences.Preference;
 import com.f2prateek.rx.preferences.RxSharedPreferences;
 import com.jakewharton.rxbinding.widget.RxRadioGroup;
+import com.jakewharton.rxrelay.PublishRelay;
 
 import java.util.List;
 
@@ -26,10 +28,14 @@ import in.nyuyu.android.cardstackview.Direction;
 import in.nyuyu.android.commons.NyuyuActivity;
 import in.nyuyu.android.commons.queries.NetworkStateQuery;
 import in.nyuyu.android.style.values.HairLength;
+import in.nyuyu.android.style.values.Swipe;
+import rx.Observable;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
-public class StyleListActivity extends NyuyuActivity implements CardStackView.CardStackEventListener, Toolbar.OnMenuItemClickListener, StyleListView {
+public class StyleListActivity extends NyuyuActivity implements CardStackView.CardStackEventListener,
+        Toolbar.OnMenuItemClickListener, DrawerLayout.DrawerListener,
+        StyleListView, SwipeEventFactory {
 
     @BindView(R.id.stylelist_drawer) DrawerLayout drawerLayout;
     @BindView(R.id.stylelist_toolbar) Toolbar toolbar;
@@ -37,12 +43,14 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     @BindView(R.id.drawer_stylelist_rgroup_hairlength) RadioGroup hairLength;
 
     @Inject StyleListPresenter listPresenter;
+    @Inject SwipeListener swipeListener;
     @Inject NetworkStateQuery networkStateQuery;
     @Inject RxSharedPreferences rxSharedPreferences;
 
     private CompositeSubscription subscriptions = new CompositeSubscription();
     private StyleListAdapter adapter;
     private Preference<HairLength> hairLengthPreference;
+    private PublishRelay<Swipe> swipeIntents = PublishRelay.create();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,16 +63,8 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     }
 
     private void initDrawer() {
+        drawerLayout.addDrawerListener(this);
         hairLengthPreference = rxSharedPreferences.getEnum(HairLength.KEY, HairLength.class);
-        RxRadioGroup.checkedChanges(hairLength)
-                .filter(resId -> resId != -1)
-                .subscribe(resId -> {
-                    if (resId == R.id.drawer_stylelist_rbutton_short) {
-                        hairLengthPreference.set(HairLength.SHORT);
-                    } else if (resId == R.id.drawer_stylelist_rbutton_medium) {
-                        hairLengthPreference.set(HairLength.MEDIUM);
-                    }
-                });
     }
 
     private void initToolbar() {
@@ -74,19 +74,32 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
 
     private void initCardStack() {
         adapter = new StyleListAdapter(this);
+        cards.setCardStackEventListener(this);
         cards.setAdapter(adapter);
     }
 
     @Override protected void onStart() {
         super.onStart();
         subscriptions.add(networkStateQuery.execute()
-                .subscribe(cards::setSwipeEnabled,
+                .subscribe(
+                        connected -> cards.setSwipeEnabled(connected),
                         throwable -> Timber.e(throwable, throwable.getMessage())));
+        subscriptions.add(RxRadioGroup.checkedChanges(hairLength)
+                .filter(resId -> resId != -1)
+                .subscribe(resId -> {
+                    if (resId == R.id.drawer_stylelist_rbutton_short) {
+                        hairLengthPreference.set(HairLength.SHORT);
+                    } else if (resId == R.id.drawer_stylelist_rbutton_medium) {
+                        hairLengthPreference.set(HairLength.MEDIUM);
+                    }
+                }));
         listPresenter.attachView(this);
+        swipeListener.attachView(this);
     }
 
     @Override protected void onStop() {
         super.onStop();
+        swipeListener.detachView(isFinishing());
         listPresenter.detachView(isFinishing());
         subscriptions.clear();
     }
@@ -96,11 +109,12 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     }
 
     @Override public void onSwipe(int index, Direction direction) {
-
+        Boolean liked = direction == Direction.BottomRight || direction == Direction.TopRight;
+        swipeIntents.call(new Swipe(adapter.getItem(index), liked));
     }
 
     @Override public void onSwipeDenied(Direction direction) {
-        Toast.makeText(this, "No network connection", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Requires network connectivity", Toast.LENGTH_SHORT).show();
     }
 
     @Override public void onTapUp(int index) {
@@ -131,6 +145,7 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
 
     @Override public void clearCards() {
         adapter.clear();
+        cards.init(true);
     }
 
     @Override public void showLoading() {
@@ -138,6 +153,7 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     }
 
     @Override public void showCards(List<StyleListItem> items) {
+        cards.init(false);
         adapter.addAll(items);
     }
 
@@ -152,5 +168,26 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     @Override public void showError() {
         Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
     }
+
+    @Override public void onDrawerSlide(View drawerView, float slideOffset) {
+
+    }
+
+    @Override public void onDrawerOpened(View drawerView) {
+        swipeListener.detachView(false);
+    }
+
+    @Override public void onDrawerClosed(View drawerView) {
+        swipeListener.attachView(this);
+    }
+
+    @Override public void onDrawerStateChanged(int newState) {
+
+    }
+
+    @Override public Observable<Swipe> swipeIntents() {
+        return swipeIntents.asObservable();
+    }
+
 }
 

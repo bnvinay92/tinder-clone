@@ -22,14 +22,12 @@ public class StyleListPresenter {
     public void attachView(StyleListView activity) {
         this.view = activity;
         subscription = model.viewStates().subscribe(viewState -> {
-            Timber.d(viewState.getState().toString());
             switch (viewState.getState()) {
                 case LOADING:
                     view.clearCards();
                     view.showLoading();
                     break;
                 case LOADED:
-                    view.clearCards();
                     view.showCards(viewState.getItems());
                     break;
                 case EMPTY:
@@ -47,7 +45,7 @@ public class StyleListPresenter {
     public void detachView(boolean finishing) {
         this.view = null;
         subscription.unsubscribe();
-        if(finishing){
+        if (finishing) {
             model.stop();
         }
     }

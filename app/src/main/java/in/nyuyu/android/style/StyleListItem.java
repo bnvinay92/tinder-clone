@@ -13,6 +13,14 @@ public class StyleListItem {
     public StyleListItem() {
     }
 
+    public StyleListItem(Long id, String imageUrl, Long likeCount, Long likeModified, String name) {
+        this.id = id;
+        this.imageUrl = imageUrl;
+        this.likeCount = likeCount;
+        this.likeModified = likeModified;
+        this.name = name;
+    }
+
     public Long getId() {
         return id;
     }
