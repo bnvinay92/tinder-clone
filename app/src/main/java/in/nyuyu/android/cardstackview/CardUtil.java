@@ -9,7 +9,8 @@ import android.widget.RelativeLayout.LayoutParams;
 
 public class CardUtil {
 
-    private CardUtil() {}
+    private CardUtil() {
+    }
 
     public static void scale(View view, int pixel) {
         CardUtil.scale(view, (LayoutParams) view.getLayoutParams(), pixel);
@@ -61,8 +62,8 @@ public class CardUtil {
         return result;
     }
 
-    public static float getDistance(float x1, float y1, float x2, float y2) {
-        return (float) Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    public static float getDistance(float x1, float x2) {
+        return Math.abs(x1 - x2);
     }
 
     public static Direction getDirection(float x1, float y1, float x2, float y2) {

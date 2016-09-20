@@ -112,7 +112,9 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
 
     @Override public void onSwipe(int index, Direction direction) {
         Boolean liked = direction == Direction.BottomRight || direction == Direction.TopRight;
-        swipeIntents.call(new Swipe(adapter.getItem(index), liked));
+        StyleListItem item = adapter.getItem(index);
+        swipeIntents.call(new Swipe(item, liked));
+        transaction.execute(item.getId());
     }
 
     @Override public void onSwipeDenied(Direction direction) {
@@ -137,8 +139,8 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     }
 
     @OnClick(R.id.stylelist_fab_undo)
-    public void likeTest() {
-        transaction.execute("1");
+    public void undo() {
+
     }
 
     private void openDrawer() {

@@ -115,7 +115,7 @@ public class CardStackView extends RelativeLayout {
                         float oldY = e1.getRawY();
                         float newX = e2.getRawX();
                         float newY = e2.getRawY();
-                        float distance = CardUtil.getDistance(oldX, oldY, newX, newY);
+                        float distance = CardUtil.getDistance(oldX, new);
                         final Direction direction = CardUtil.getDirection(oldX, oldY, newX, newY);
 
                         if (distance < SWIPE_DISTANCE_THRESHOLD) {
@@ -126,7 +126,7 @@ public class CardStackView extends RelativeLayout {
                             } else {
                                 cardAnimator.moveToOrigin();
                                 if (cardStackEventListener != null)
-                                cardStackEventListener.onSwipeDenied(direction);
+                                    cardStackEventListener.onSwipeDenied(direction);
                             }
                         }
                     }

@@ -29,7 +29,7 @@ public class LikeCountTransaction {
         this.databaseReference = databaseReference;
     }
 
-    public void execute(String styleId) {
+    public void execute(Long styleId) {
         databaseReference.child(String.format(PATH, styleId)).runTransaction(new Transaction.Handler() {
             @Override public Transaction.Result doTransaction(MutableData mutableData) {
                 MutableData likeCount = mutableData.child("likeCount");
@@ -51,16 +51,10 @@ public class LikeCountTransaction {
                     Long likeModified = snapshot.child("likeModified").getValue(Long.class);
                     Map<String, Object> payload = new HashMap<>();
                     for (String path : filterPaths) {
-                        Timber.d(path.concat("/likeCount"));
                         payload.put(path.concat("/likeCount"), likeCount);
                         payload.put(path.concat("/likeModified"), likeModified);
                     }
-                    databaseReference.updateChildren(payload, (databaseError1, databaseReference1) -> {
-                        if (databaseError1 != null) {
-                            Timber.e(databaseError1.toException(), databaseError1.getMessage());
-                        }
-                    });
-                    Timber.d("Transaction executed");
+                    databaseReference.updateChildren(payload);
                 } else {
                     if (databaseError != null)
                         Timber.e(databaseError.toException(), databaseError.getMessage());
