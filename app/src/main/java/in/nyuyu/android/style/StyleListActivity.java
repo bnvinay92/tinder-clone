@@ -27,6 +27,7 @@ import in.nyuyu.android.cardstackview.CardStackView;
 import in.nyuyu.android.cardstackview.Direction;
 import in.nyuyu.android.commons.NyuyuActivity;
 import in.nyuyu.android.commons.queries.NetworkStateQuery;
+import in.nyuyu.android.style.services.LikeCountTransaction;
 import in.nyuyu.android.style.values.HairLength;
 import in.nyuyu.android.style.values.Swipe;
 import rx.Observable;
@@ -46,6 +47,7 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     @Inject SwipeListener swipeListener;
     @Inject NetworkStateQuery networkStateQuery;
     @Inject RxSharedPreferences rxSharedPreferences;
+    @Inject LikeCountTransaction transaction;
 
     private CompositeSubscription subscriptions = new CompositeSubscription();
     private StyleListAdapter adapter;
@@ -121,10 +123,6 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
 
     }
 
-    private void openDrawer() {
-        drawerLayout.openDrawer(GravityCompat.END);
-    }
-
     @Override public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_stylelist_filter:
@@ -136,6 +134,15 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
             default:
                 throw new IllegalStateException("Unidentified menu item " + item.getItemId());
         }
+    }
+
+    @OnClick(R.id.stylelist_fab_undo)
+    public void likeTest() {
+        transaction.execute("1");
+    }
+
+    private void openDrawer() {
+        drawerLayout.openDrawer(GravityCompat.END);
     }
 
     @OnClick(R.id.drawer_stylelist_ibutton_close)

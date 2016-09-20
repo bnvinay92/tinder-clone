@@ -14,7 +14,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import in.nyuyu.android.style.StyleListItem;
+import timber.log.Timber;
 
 /**
  * Created by Vinay on 20/09/16.
@@ -22,7 +22,7 @@ import in.nyuyu.android.style.StyleListItem;
 
 public class LikeCountTransaction {
 
-    public static final String PATH = "styles/%s";
+    public static final String PATH = "styles/%s/likeInfo";
     private final DatabaseReference databaseReference;
 
     @Inject public LikeCountTransaction(DatabaseReference databaseReference) {
@@ -39,7 +39,7 @@ public class LikeCountTransaction {
                     mutableData.child("likeModified").setValue(ServerValue.TIMESTAMP);
                     return Transaction.success(mutableData);
                 } else {
-                    return null;
+                    return Transaction.success(mutableData);
                 }
             }
 
@@ -47,18 +47,23 @@ public class LikeCountTransaction {
                 if (committed) {
                     List<String> filterPaths = snapshot.child("filters").getValue(new GenericTypeIndicator<List<String>>() {
                     });
-                    Long id = snapshot.child("id").getValue(Long.class);
-                    String name = snapshot.child("name").getValue(String.class);
-                    String imageUrl = snapshot.child("imageUrl").getValue(String.class);
                     Long likeCount = snapshot.child("likeCount").getValue(Long.class);
                     Long likeModified = snapshot.child("likeModified").getValue(Long.class);
-
-                    StyleListItem item = new StyleListItem(id, imageUrl, likeCount, likeModified, name);
-                    Map<String, Object> payload = new HashMap<String, Object>();
+                    Map<String, Object> payload = new HashMap<>();
                     for (String path : filterPaths) {
-                        payload.put(path, item);
+                        Timber.d(path.concat("/likeCount"));
+                        payload.put(path.concat("/likeCount"), likeCount);
+                        payload.put(path.concat("/likeModified"), likeModified);
                     }
-                    databaseReference.updateChildren(payload);
+                    databaseReference.updateChildren(payload, (databaseError1, databaseReference1) -> {
+                        if (databaseError1 != null) {
+                            Timber.e(databaseError1.toException(), databaseError1.getMessage());
+                        }
+                    });
+                    Timber.d("Transaction executed");
+                } else {
+                    if (databaseError != null)
+                        Timber.e(databaseError.toException(), databaseError.getMessage());
                 }
             }
         });
