@@ -66,7 +66,6 @@ public class StyleListModel {
                                                     styleListQuery.execute(styleListFilterParameters, startAtStyleId).toObservable(),
                                                     likedStyleIdSetQuery.execute(userId).toObservable(),
                                                     (styles, likedStyles) -> {
-                                                        Timber.d("Liked styles: %s", likedStyles.size());
                                                         Iterator<StyleListItem> iterator = styles.iterator();
                                                         while (iterator.hasNext()) {
                                                             if (likedStyles.contains(iterator.next().getId())) {

@@ -1,6 +1,7 @@
 package in.nyuyu.android.style;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.support.v4.view.GravityCompat;
@@ -28,6 +29,7 @@ import in.nyuyu.android.cardstackview.CardStackView;
 import in.nyuyu.android.cardstackview.Direction;
 import in.nyuyu.android.commons.NyuyuActivity;
 import in.nyuyu.android.commons.queries.NetworkStateQuery;
+import in.nyuyu.android.commons.views.BadgeDrawable;
 import in.nyuyu.android.style.values.HairLength;
 import in.nyuyu.android.style.values.Swipe;
 import rx.Observable;
@@ -36,17 +38,19 @@ import timber.log.Timber;
 
 public class StyleListActivity extends NyuyuActivity implements CardStackView.CardStackEventListener,
         Toolbar.OnMenuItemClickListener, DrawerLayout.DrawerListener,
-        StyleListView, SwipeEventFactory {
+        StyleListView, SwipeEventFactory, LikeCountView {
 
     @BindView(R.id.stylelist_drawer) DrawerLayout drawerLayout;
     @BindView(R.id.stylelist_toolbar) Toolbar toolbar;
     @BindView(R.id.stylelist_cardstack) CardStackView cards;
     @BindView(R.id.drawer_stylelist_rgroup_hairlength) RadioGroup hairLength;
+    private LayerDrawable likeCountDrawable;
 
     @Inject StyleListPresenter listPresenter;
     @Inject SwipeListener swipeListener;
     @Inject NetworkStateQuery networkStateQuery;
     @Inject RxSharedPreferences rxSharedPreferences;
+    @Inject LikeCountPresenter likeCountPresenter;
 
     private CompositeSubscription subscriptions = new CompositeSubscription();
     private StyleListAdapter adapter;
@@ -71,6 +75,23 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     private void initToolbar() {
         toolbar.inflateMenu(R.menu.stylelist);
         toolbar.setOnMenuItemClickListener(this);
+        MenuItem favoritesMenuItem = toolbar.getMenu().findItem(R.id.menu_stylelist_shortlist);
+        likeCountDrawable = (LayerDrawable) favoritesMenuItem.getIcon();
+    }
+
+    @Override public void setLikeCount(String count) {
+        BadgeDrawable badge;
+
+        Drawable reuse = likeCountDrawable.findDrawableByLayerId(R.id.ic_badge);
+        if (reuse != null && reuse instanceof BadgeDrawable) {
+            badge = (BadgeDrawable) reuse;
+        } else {
+            badge = new BadgeDrawable(this);
+        }
+
+        likeCountDrawable.mutate();
+        likeCountDrawable.setDrawableByLayerId(R.id.ic_badge, badge);
+        badge.setCount(count);
     }
 
     private void initCardStack() {
@@ -96,10 +117,12 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
                 }));
         listPresenter.attachView(this);
         swipeListener.attachView(this);
+        likeCountPresenter.attachView(this);
     }
 
     @Override protected void onStop() {
         super.onStop();
+        likeCountPresenter.detachView();
         swipeListener.detachView(isFinishing());
         listPresenter.detachView(isFinishing());
         subscriptions.clear();
