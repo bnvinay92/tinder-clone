@@ -3,6 +3,7 @@ package in.nyuyu.android;
 import javax.inject.Singleton;
 
 import dagger.Component;
+import in.nyuyu.android.style.LikedStyleListActivity;
 import in.nyuyu.android.style.StyleListActivity;
 
 /**
@@ -12,4 +13,5 @@ import in.nyuyu.android.style.StyleListActivity;
 @Component(modules = {NyuyuModule.class})
 public interface NyuyuComponent {
     void inject(StyleListActivity target);
+    void inject(LikedStyleListActivity target);
 }

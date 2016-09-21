@@ -14,6 +14,8 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import in.nyuyu.android.commons.Rx;
+import rx.Observable;
 import timber.log.Timber;
 
 /**
@@ -54,12 +56,24 @@ public class LikeCountTransaction {
                         payload.put(path.concat("/likeCount"), likeCount);
                         payload.put(path.concat("/likeModified"), likeModified);
                     }
-                    databaseReference.updateChildren(payload);
+//                    databaseReference.updateChildren(payload);
                 } else {
                     if (databaseError != null)
                         Timber.e(databaseError.toException(), databaseError.getMessage());
                 }
             }
         });
+    }
+
+    public Observable<DataSnapshot> executed(Long styleId) {
+        return Rx.transact(databaseReference.child(String.format(PATH, styleId)), mutableData -> {
+            MutableData likeCount = mutableData.child("likeCount");
+            Long likeCountValue = likeCount.getValue(Long.class);
+            if (likeCountValue != null) {
+                likeCount.setValue(likeCountValue + 1);
+                mutableData.child("likeModified").setValue(ServerValue.TIMESTAMP);
+            }
+            return Transaction.success(mutableData);
+        }).toObservable();
     }
 }

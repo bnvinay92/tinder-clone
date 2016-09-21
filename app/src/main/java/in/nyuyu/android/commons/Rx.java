@@ -5,6 +5,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
@@ -74,7 +75,28 @@ public class Rx {
         }, AsyncEmitter.BackpressureMode.LATEST).toSingle();
     }
 
-    public static void transact(DatabaseReference child, Transaction.Handler handler) {
+    public static Single<DataSnapshot> transact(DatabaseReference databaseReference, TransactionExecutor handler) {
+        return Observable.<DataSnapshot>fromEmitter(emitter -> databaseReference.runTransaction(new Transaction.Handler() {
+            @Override public Transaction.Result doTransaction(MutableData mutableData) {
+                return handler.execute(mutableData);
+            }
 
+            @Override public void onComplete(DatabaseError databaseError, boolean committed, DataSnapshot dataSnapshot) {
+                if (committed) {
+                    emitter.onNext(dataSnapshot);
+                    emitter.onCompleted();
+                } else {
+                    if (databaseError != null) {
+                        emitter.onError(databaseError.toException());
+                    } else {
+                        emitter.onError(new Throwable("Transaction did not commit"));
+                    }
+                }
+            }
+        }), AsyncEmitter.BackpressureMode.LATEST).toSingle();
+    }
+
+    public interface TransactionExecutor {
+        Transaction.Result execute(MutableData mutableData);
     }
 }

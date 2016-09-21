@@ -21,6 +21,7 @@ public class StyleListFilterParametersQuery {
     }
 
     public Observable<String> execute(String userId) {
+        //TODO
         return hairLengthPreference.asObservable()
                 .map(hairLength -> hairLength == HairLength.SHORT ? "male_18-30_short_cut_diamond" : "male_18-30_short_cut_oval");
     }

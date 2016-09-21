@@ -23,7 +23,7 @@ public class LastSeenStyleIdQuery {
     public Single<String> execute(String userId, String styleListFilterParameters) {
         return Rx.once(databaseReference.child(path(userId, styleListFilterParameters)))
                 .map(snapshot -> snapshot.getValue(Swipe.class))
-                .map(swipe -> swipe == null ? "0" : String.valueOf(swipe.getItem().getId() + 1));
+                .map(swipe -> swipe == null ? "-1" : String.valueOf(swipe.getItem().getId() + 1));
     }
 
     public void update(String userId, String styleListFilterParameters, Swipe swipe) {

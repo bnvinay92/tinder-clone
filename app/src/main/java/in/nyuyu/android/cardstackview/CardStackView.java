@@ -115,7 +115,7 @@ public class CardStackView extends RelativeLayout {
                         float oldY = e1.getRawY();
                         float newX = e2.getRawX();
                         float newY = e2.getRawY();
-                        float distance = CardUtil.getDistance(oldX, new);
+                        float distance = CardUtil.getDistance(oldX, newX);
                         final Direction direction = CardUtil.getDirection(oldX, oldY, newX, newY);
 
                         if (distance < SWIPE_DISTANCE_THRESHOLD) {

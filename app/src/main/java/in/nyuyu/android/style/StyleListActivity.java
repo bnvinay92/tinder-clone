@@ -27,7 +27,6 @@ import in.nyuyu.android.cardstackview.CardStackView;
 import in.nyuyu.android.cardstackview.Direction;
 import in.nyuyu.android.commons.NyuyuActivity;
 import in.nyuyu.android.commons.queries.NetworkStateQuery;
-import in.nyuyu.android.style.services.LikeCountTransaction;
 import in.nyuyu.android.style.values.HairLength;
 import in.nyuyu.android.style.values.Swipe;
 import rx.Observable;
@@ -47,7 +46,6 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     @Inject SwipeListener swipeListener;
     @Inject NetworkStateQuery networkStateQuery;
     @Inject RxSharedPreferences rxSharedPreferences;
-    @Inject LikeCountTransaction transaction;
 
     private CompositeSubscription subscriptions = new CompositeSubscription();
     private StyleListAdapter adapter;
@@ -107,14 +105,13 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     }
 
     @Override public void onDrag(float percentage) {
-        Timber.d("Percentage: %s", percentage);
+
     }
 
     @Override public void onSwipe(int index, Direction direction) {
         Boolean liked = direction == Direction.BottomRight || direction == Direction.TopRight;
         StyleListItem item = adapter.getItem(index);
         swipeIntents.call(new Swipe(item, liked));
-        transaction.execute(item.getId());
     }
 
     @Override public void onSwipeDenied(Direction direction) {

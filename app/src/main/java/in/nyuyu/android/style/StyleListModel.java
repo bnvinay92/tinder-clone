@@ -3,6 +3,7 @@ package in.nyuyu.android.style;
 import com.google.firebase.auth.FirebaseUser;
 import com.jakewharton.rxrelay.PublishRelay;
 
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -65,17 +66,18 @@ public class StyleListModel {
                                                     styleListQuery.execute(styleListFilterParameters, startAtStyleId).toObservable(),
                                                     likedStyleIdSetQuery.execute(userId).toObservable(),
                                                     (styles, likedStyles) -> {
-                                                        for (int i = 0; i < styles.size(); i++) {
-                                                            StyleListItem item = styles.get(i);
-                                                            if (likedStyles.contains(String.valueOf(item.getId()))) {
-                                                                styles.remove(i);
+                                                        Timber.d("Liked styles: %s", likedStyles.size());
+                                                        Iterator<StyleListItem> iterator = styles.iterator();
+                                                        while (iterator.hasNext()) {
+                                                            if (likedStyles.contains(iterator.next().getId())) {
+                                                                iterator.remove();
                                                             }
                                                         }
                                                         return styles;
                                                     })
                                                     .map(styles -> styles.isEmpty() ? create(EMPTY) : create(LOADED, styles))
-                                                    .timeout(TIMEOUT, TimeUnit.SECONDS)
-                                                    .startWith(create(LOADING)))))
+                                                    .timeout(TIMEOUT, TimeUnit.SECONDS))
+                                            .startWith(create(LOADING))))
                     .subscribeOn(Schedulers.computation())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(

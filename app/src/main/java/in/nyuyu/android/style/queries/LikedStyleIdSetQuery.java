@@ -22,13 +22,13 @@ public class LikedStyleIdSetQuery {
         this.databaseReference = databaseReference;
     }
 
-    public Single<Set<String>> execute(String userId) {
+    public Single<Set<Long>> execute(String userId) {
         return Rx.once(databaseReference.child(String.format(PATH, userId)))
                 .map(DataSnapshot::getChildren)
                 .map(snapshots -> {
-                    Set<String> likedStyleIds = new HashSet<>();
+                    Set<Long> likedStyleIds = new HashSet<>();
                     for (DataSnapshot snapshot : snapshots) {
-                        likedStyleIds.add(snapshot.getKey());
+                        likedStyleIds.add(snapshot.child("id").getValue(Long.class));
                     }
                     return likedStyleIds;
                 });

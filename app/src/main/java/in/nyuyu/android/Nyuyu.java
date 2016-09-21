@@ -3,7 +3,6 @@ package in.nyuyu.android;
 import android.app.Application;
 
 import com.google.firebase.database.FirebaseDatabase;
-import com.squareup.leakcanary.LeakCanary;
 
 import hu.supercluster.paperwork.Paperwork;
 import jonathanfinerty.once.Once;
@@ -20,7 +19,7 @@ public class Nyuyu extends Application {
         super.onCreate();
         Paperwork paperwork = new Paperwork(this);
         if (BuildConfig.DEBUG) {
-            LeakCanary.install(this);
+//            LeakCanary.install(this);
             Timber.plant(new Timber.DebugTree());
         } else {
             String buildTime = paperwork.get("build_time");
