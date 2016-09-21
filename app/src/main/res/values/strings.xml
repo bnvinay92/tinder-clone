@@ -7,4 +7,5 @@
     <string name="drawer_stylelist_tview_hairlength_text">Hair Length</string>
     <string name="drawer_stylelist_tview_theme_text">Theme</string>
     <string name="drawer_stylelist_ibutton_close_contentDescription">Closes filters</string>
+    <string name="menu_likedstylelist_share_title">Share this list</string>
 </resources>

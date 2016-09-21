@@ -40,7 +40,7 @@ public class StyleListAdapter extends ArrayAdapter<StyleListItem> {
         Glide.with(getContext())
                 .load(model.getImageUrl())
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                .centerCrop()
+                .fitCenter()
                 .into(holder.image);
         holder.name.setText(model.getName());
         holder.likeCount.setText(String.valueOf(model.getLikeCount()));

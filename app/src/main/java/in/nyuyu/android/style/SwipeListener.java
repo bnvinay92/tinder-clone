@@ -12,7 +12,6 @@ import in.nyuyu.android.style.queries.LikedStyleListQuery;
 import in.nyuyu.android.style.queries.StyleListFilterParametersQuery;
 import in.nyuyu.android.style.services.LikeCountTransaction;
 import in.nyuyu.android.style.values.Swipe;
-import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
@@ -44,6 +43,7 @@ public class SwipeListener {
         this.likeCountUpdater = likeCountUpdater;
     }
 
+
     public void attachView(SwipeEventFactory eventFactory) {
         this.eventFactory = eventFactory;
         subscription = userQuery.execute()
@@ -51,21 +51,30 @@ public class SwipeListener {
                 .toObservable()
                 .subscribeOn(Schedulers.computation())
                 .observeOn(Schedulers.io())
-                .switchMap(userId -> Observable.combineLatest(
-                        eventFactory.swipeIntents(),
-                        parametersQuery.execute(userId),
-                        (swipe, styleListFilterParameters) -> {
-                            lastSeenStyleIdQuery.update(userId, styleListFilterParameters, swipe);
-                            return swipe;
-                        })
-                        .filter(Swipe::getLiked)
-                        .map(Swipe::getItem)
-                        .doOnNext(item -> likedStyleListQuery.update(userId, item)))
-                .map(StyleListItem::getId)
-                .flatMap(likeCountTransaction::executed)
-                .subscribe(
-                        likeCountUpdater::execute,
+                .switchMap(userId -> parametersQuery.execute(userId)
+                        .concatMap(styleListFilterParameters -> eventFactory.swipeIntents()
+                                .doOnNext(swipe -> lastSeenStyleIdQuery.update(userId, styleListFilterParameters, swipe))
+                                .filter(Swipe::getLiked)
+                                .map(Swipe::getItem)
+                                .doOnNext(item -> likedStyleListQuery.update(userId, item))
+                                .map(StyleListItem::getId)))
+                .flatMap(likeCountTransaction::execute)
+                .subscribe(likeCountUpdater::execute,
                         throwable -> Timber.e(throwable, throwable.getMessage()));
+//                        eventFactory.swipeIntents(),
+//                        parametersQuery.execute(userId),
+//                        (swipe, styleListFilterParameters) -> {
+//                            lastSeenStyleIdQuery.update(userId, styleListFilterParameters, swipe);
+//                            return swipe;
+//                        })
+//                        .filter(Swipe::getLiked)
+//                        .map(Swipe::getItem)
+//                        .doOnNext(item -> likedStyleListQuery.update(userId, item)))
+//                .map(StyleListItem::getId)
+//                .flatMap(likeCountTransaction::execute)
+//                .subscribe(
+//                        likeCountUpdater::execute,
+//                        throwable -> Timber.e(throwable, throwable.getMessage()));
     }
 
     public void detachView(boolean finishing) {
