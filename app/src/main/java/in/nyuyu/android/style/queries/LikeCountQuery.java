@@ -21,9 +21,9 @@ public class LikeCountQuery {
     }
 
 
-    public Observable<String> execute(String userId) {
+    public Observable<Integer> execute(String userId) {
         return Rx.values(databaseReference.child(String.format(PATH, userId)))
                 .map(DataSnapshot::getChildrenCount)
-                .map(String::valueOf);
+                .map(Long::intValue);
     }
 }

@@ -25,7 +25,6 @@ public class Nyuyu extends Application {
         super.onCreate();
         Paperwork paperwork = new Paperwork(this);
         if (BuildConfig.DEBUG) {
-//            LeakCanary.install(this);
             Timber.plant(new Timber.DebugTree());
         } else {
             Fabric.with(this, new Crashlytics());
@@ -33,6 +32,7 @@ public class Nyuyu extends Application {
             String gitSha = paperwork.get("git_sha");
             Crashlytics.setString(GIT_SHA, gitSha);
             Crashlytics.setString(BUILD_TIME, buildTime);
+            Crashlytics.setInt("version_code", BuildConfig.VERSION_CODE);
             Timber.plant(new CrashlyticsTree());
         }
         FirebaseDatabase.getInstance().setPersistenceEnabled(false);

@@ -2,11 +2,13 @@ package in.nyuyu.android.style;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.RadioGroup;
@@ -16,6 +18,7 @@ import com.f2prateek.rx.preferences.Preference;
 import com.f2prateek.rx.preferences.RxSharedPreferences;
 import com.jakewharton.rxbinding.widget.RxRadioGroup;
 import com.jakewharton.rxrelay.PublishRelay;
+import com.mikepenz.actionitembadge.library.ActionItemBadge;
 
 import java.util.List;
 
@@ -29,7 +32,6 @@ import in.nyuyu.android.cardstackview.CardStackView;
 import in.nyuyu.android.cardstackview.Direction;
 import in.nyuyu.android.commons.NyuyuActivity;
 import in.nyuyu.android.commons.queries.NetworkStateQuery;
-import in.nyuyu.android.commons.views.BadgeDrawable;
 import in.nyuyu.android.style.values.HairLength;
 import in.nyuyu.android.style.values.Swipe;
 import rx.Observable;
@@ -39,12 +41,16 @@ import timber.log.Timber;
 public class StyleListActivity extends NyuyuActivity implements CardStackView.CardStackEventListener,
         Toolbar.OnMenuItemClickListener, DrawerLayout.DrawerListener,
         StyleListView, SwipeEventFactory, LikeCountView {
+    static {
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+    }
 
     @BindView(R.id.stylelist_drawer) DrawerLayout drawerLayout;
     @BindView(R.id.stylelist_toolbar) Toolbar toolbar;
     @BindView(R.id.stylelist_cardstack) CardStackView cards;
     @BindView(R.id.drawer_stylelist_rgroup_hairlength) RadioGroup hairLength;
-    private LayerDrawable likeCountDrawable;
+    private Menu menu;
+    private Drawable heartDrawable;
 
     @Inject StyleListPresenter listPresenter;
     @Inject SwipeListener swipeListener;
@@ -75,23 +81,20 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     private void initToolbar() {
         toolbar.inflateMenu(R.menu.stylelist);
         toolbar.setOnMenuItemClickListener(this);
-        MenuItem favoritesMenuItem = toolbar.getMenu().findItem(R.id.menu_stylelist_shortlist);
-        likeCountDrawable = (LayerDrawable) favoritesMenuItem.getIcon();
+        menu = toolbar.getMenu();
+        heartDrawable = ContextCompat.getDrawable(this, R.drawable.ic_heart_black_24dp);
     }
 
-    @Override public void setLikeCount(String count) {
-        BadgeDrawable badge;
-
-        Drawable reuse = likeCountDrawable.findDrawableByLayerId(R.id.ic_badge);
-        if (reuse != null && reuse instanceof BadgeDrawable) {
-            badge = (BadgeDrawable) reuse;
+    @Override public void setLikeCount(int badgeCount) {
+        if (badgeCount > 0) {
+            ActionItemBadge.update(this,
+                    menu.findItem(R.id.menu_stylelist_shortlist),
+                    heartDrawable,
+                    ActionItemBadge.BadgeStyles.YELLOW,
+                    badgeCount);
         } else {
-            badge = new BadgeDrawable(this);
+            ActionItemBadge.hide(menu.findItem(R.id.menu_stylelist_shortlist));
         }
-
-        likeCountDrawable.mutate();
-        likeCountDrawable.setDrawableByLayerId(R.id.ic_badge, badge);
-        badge.setCount(count);
     }
 
     private void initCardStack() {

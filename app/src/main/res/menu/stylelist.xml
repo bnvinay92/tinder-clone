@@ -4,9 +4,9 @@
 
     <item
         android:id="@+id/menu_stylelist_shortlist"
-        android:icon="@drawable/ic_menu_heart"
         android:orderInCategory="100"
         android:title="@string/menu_stylelist_shortlist_title"
+        app:actionLayout="@layout/menu_action_item_badge"
         app:showAsAction="always" />
     <item
         android:id="@+id/menu_stylelist_filter"

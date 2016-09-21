@@ -105,7 +105,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_centerInParent="true"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/cardstack_vertical_margin"
             android:layout_marginEnd="@dimen/cardstack_horizontal_margin"
             android:layout_marginStart="@dimen/cardstack_horizontal_margin"
             android:layout_marginTop="@dimen/activity_vertical_margin"
