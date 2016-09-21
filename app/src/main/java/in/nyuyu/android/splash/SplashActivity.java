@@ -5,12 +5,14 @@ import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.firebase.FirebaseNetworkException;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 
 import butterknife.BindView;
+import in.nyuyu.android.BuildConfig;
 import in.nyuyu.android.R;
 import in.nyuyu.android.commons.NyuyuActivity;
 import in.nyuyu.android.commons.Rx;
@@ -38,6 +40,9 @@ public class SplashActivity extends NyuyuActivity {
                             if (Once.beenDone(Once.THIS_APP_INSTALL, Scopes.onboarding(userId))) {
                                 startActivity(new Intent(this, StyleListActivity.class));
                             } else {
+                                if (!BuildConfig.DEBUG) {
+                                    Crashlytics.setUserIdentifier(userId);
+                                }
                                 FirebaseDatabase.getInstance().getReference("sessions").child(userId).keepSynced(true);
                                 startActivity(new Intent(this, OnboardingActivity.class));
                             }
