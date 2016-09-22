@@ -1,14 +1,11 @@
 package in.nyuyu.android.style;
 
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.RadioGroup;
@@ -18,7 +15,6 @@ import com.f2prateek.rx.preferences.Preference;
 import com.f2prateek.rx.preferences.RxSharedPreferences;
 import com.jakewharton.rxbinding.widget.RxRadioGroup;
 import com.jakewharton.rxrelay.PublishRelay;
-import com.mikepenz.actionitembadge.library.ActionItemBadge;
 
 import java.util.List;
 
@@ -49,8 +45,7 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     @BindView(R.id.stylelist_toolbar) Toolbar toolbar;
     @BindView(R.id.stylelist_cardstack) CardStackView cards;
     @BindView(R.id.drawer_stylelist_rgroup_hairlength) RadioGroup hairLength;
-    private Menu menu;
-    private Drawable heartDrawable;
+    private View badgeView;
 
     @Inject StyleListPresenter listPresenter;
     @Inject SwipeListener swipeListener;
@@ -81,20 +76,10 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     private void initToolbar() {
         toolbar.inflateMenu(R.menu.stylelist);
         toolbar.setOnMenuItemClickListener(this);
-        menu = toolbar.getMenu();
-        heartDrawable = ContextCompat.getDrawable(this, R.drawable.ic_heart_black_24dp);
     }
 
     @Override public void setLikeCount(int badgeCount) {
-        if (badgeCount > 0) {
-            ActionItemBadge.update(this,
-                    menu.findItem(R.id.menu_stylelist_shortlist),
-                    heartDrawable,
-                    ActionItemBadge.BadgeStyles.YELLOW,
-                    badgeCount);
-        } else {
-            ActionItemBadge.hide(menu.findItem(R.id.menu_stylelist_shortlist));
-        }
+        //TODO
     }
 
     private void initCardStack() {
@@ -146,7 +131,10 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     }
 
     @Override public void onTapUp(int index) {
-
+        StyleListItem item = adapter.getItem(index);
+        Intent styleActivityStarter = new Intent(this, StyleActivity.class);
+        styleActivityStarter.putExtra(StyleListItem.EXTRA, item);
+        startActivity(styleActivityStarter);
     }
 
     @Override public boolean onMenuItemClick(MenuItem item) {
