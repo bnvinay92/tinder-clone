@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="in.nyuyu.android">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -14,6 +15,7 @@
         android:theme="@style/NyuyuTheme">
         <activity
             android:name=".splash.SplashActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,15 +23,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".style.StyleListActivity" />
-        <activity android:name=".onboarding.OnboardingActivity" />
+        <activity
+            android:name=".style.StyleListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".onboarding.OnboardingActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Intro" />
         <activity android:name=".style.LikedStyleListActivity" />
+        <activity
+            android:name=".style.StyleActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".style.TestActivity" />
 
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="69e81093aa49890f933b1d27301a4dd5be8760ac" />
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
 
-        <activity android:name=".style.StyleActivity"></activity>
+        <activity
+            android:name=".salons.SalonListActivity"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

@@ -14,6 +14,7 @@ import in.nyuyu.android.style.services.LikeCountTransaction;
 import in.nyuyu.android.style.values.Swipe;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.Subscriptions;
 import timber.log.Timber;
 
 /**
@@ -23,7 +24,7 @@ import timber.log.Timber;
 public class SwipeListener {
 
     private SwipeEventFactory eventFactory;
-    private Subscription subscription;
+    private Subscription subscription = Subscriptions.unsubscribed();
 
     private final StyleListFilterParametersQuery parametersQuery;
     private final CurrentUserQuery userQuery;
@@ -58,23 +59,10 @@ public class SwipeListener {
                                 .map(Swipe::getItem)
                                 .doOnNext(item -> likedStyleListQuery.update(userId, item))
                                 .map(StyleListItem::getId)))
-                .flatMap(likeCountTransaction::execute)
+                .concatMap(styleId -> likeCountTransaction.execute(styleId)
+                        .retry())
                 .subscribe(likeCountUpdater::execute,
                         throwable -> Timber.e(throwable, throwable.getMessage()));
-//                        eventFactory.swipeIntents(),
-//                        parametersQuery.execute(userId),
-//                        (swipe, styleListFilterParameters) -> {
-//                            lastSeenStyleIdQuery.update(userId, styleListFilterParameters, swipe);
-//                            return swipe;
-//                        })
-//                        .filter(Swipe::getLiked)
-//                        .map(Swipe::getItem)
-//                        .doOnNext(item -> likedStyleListQuery.update(userId, item)))
-//                .map(StyleListItem::getId)
-//                .flatMap(likeCountTransaction::execute)
-//                .subscribe(
-//                        likeCountUpdater::execute,
-//                        throwable -> Timber.e(throwable, throwable.getMessage()));
     }
 
     public void detachView(boolean finishing) {

@@ -1,18 +1,24 @@
 package in.nyuyu.android.style;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.f2prateek.rx.preferences.Preference;
-import com.f2prateek.rx.preferences.RxSharedPreferences;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 import com.jakewharton.rxbinding.widget.RxRadioGroup;
 import com.jakewharton.rxrelay.PublishRelay;
 
@@ -28,6 +34,8 @@ import in.nyuyu.android.cardstackview.CardStackView;
 import in.nyuyu.android.cardstackview.Direction;
 import in.nyuyu.android.commons.NyuyuActivity;
 import in.nyuyu.android.commons.queries.NetworkStateQuery;
+import in.nyuyu.android.style.values.FilterTheme;
+import in.nyuyu.android.style.values.Gender;
 import in.nyuyu.android.style.values.HairLength;
 import in.nyuyu.android.style.values.Swipe;
 import rx.Observable;
@@ -41,26 +49,49 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
     }
 
+    public static final String ITEM_COUNT_KEY = "items_count";
+
     @BindView(R.id.stylelist_drawer) DrawerLayout drawerLayout;
     @BindView(R.id.stylelist_toolbar) Toolbar toolbar;
     @BindView(R.id.stylelist_cardstack) CardStackView cards;
+    @BindView(R.id.stylelist_statusview) ImageView statusImageView;
+
     @BindView(R.id.drawer_stylelist_rgroup_hairlength) RadioGroup hairLength;
-    private View badgeView;
+    @BindView(R.id.drawer_stylelist_rgroup_gender) RadioGroup gender;
+    @BindView(R.id.drawer_stylelist_rgroup_theme) RadioGroup theme;
 
     @Inject StyleListPresenter listPresenter;
+    @Inject LikeCountPresenter likeCountPresenter;
     @Inject SwipeListener swipeListener;
     @Inject NetworkStateQuery networkStateQuery;
-    @Inject RxSharedPreferences rxSharedPreferences;
-    @Inject LikeCountPresenter likeCountPresenter;
+    @Inject RefreshLastSeenStyleId reloadUsecase;
+    @Inject Preference<HairLength> hairLengthPreference;
+    @Inject Preference<Gender> genderPreference;
+    @Inject Preference<FilterTheme> themePreference;
+
+    private Drawable loadingDrawable;
+    private Drawable reloadDrawable;
+    private Drawable emptyDrawable;
+    private Drawable timeOutDrawable;
+    private Drawable errorDrawable;
+    private Drawable emptyPreferencesDrawable;
 
     private CompositeSubscription subscriptions = new CompositeSubscription();
+    private CompositeSubscription drawerSubscriptions = new CompositeSubscription();
     private StyleListAdapter adapter;
-    private Preference<HairLength> hairLengthPreference;
     private PublishRelay<Swipe> swipeIntents = PublishRelay.create();
+
+    private int itemCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        loadingDrawable = ContextCompat.getDrawable(this, R.drawable.ic_loading_black_24dp);
+        reloadDrawable = ContextCompat.getDrawable(this, R.drawable.ic_reload_black_24dp);
+        emptyDrawable = ContextCompat.getDrawable(this, R.drawable.ic_empty_black_24dp);
+        timeOutDrawable = ContextCompat.getDrawable(this, R.drawable.ic_timeout_black_24dp);
+        errorDrawable = ContextCompat.getDrawable(this, R.drawable.ic_error_black_24dp);
+        emptyPreferencesDrawable = ContextCompat.getDrawable(this, R.drawable.ic_empty_prefs_black_24dp);
         setContentView(R.layout.activity_style_list);
         ((Nyuyu) getApplication()).component().inject(this);
         initToolbar();
@@ -70,7 +101,22 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
 
     private void initDrawer() {
         drawerLayout.addDrawerListener(this);
-        hairLengthPreference = rxSharedPreferences.getEnum(HairLength.KEY, HairLength.class);
+        HairLength userHairLength = hairLengthPreference.get();
+        Gender userGender = genderPreference.get();
+        FilterTheme userFilterTheme = themePreference.get();
+        if (userFilterTheme != null) {
+            theme.check(themePreference.get().resId());
+        }
+        if (userHairLength != null) {
+            hairLength.check(hairLengthPreference.get().resId());
+        }
+        if (userGender != null) {
+            gender.check(genderPreference.get().resId());
+        }
+        if (userFilterTheme == null || userGender == null || userHairLength == null) {
+            showEmptyPreferences();
+            openDrawer();
+        }
     }
 
     private void initToolbar() {
@@ -94,15 +140,6 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
                 .subscribe(
                         connected -> cards.setSwipeEnabled(connected),
                         throwable -> Timber.e(throwable, throwable.getMessage())));
-        subscriptions.add(RxRadioGroup.checkedChanges(hairLength)
-                .filter(resId -> resId != -1)
-                .subscribe(resId -> {
-                    if (resId == R.id.drawer_stylelist_rbutton_short) {
-                        hairLengthPreference.set(HairLength.SHORT);
-                    } else if (resId == R.id.drawer_stylelist_rbutton_medium) {
-                        hairLengthPreference.set(HairLength.MEDIUM);
-                    }
-                }));
         listPresenter.attachView(this);
         swipeListener.attachView(this);
         likeCountPresenter.attachView(this);
@@ -121,9 +158,16 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
     }
 
     @Override public void onSwipe(int index, Direction direction) {
+        itemCount--;
         Boolean liked = direction == Direction.BottomRight || direction == Direction.TopRight;
         StyleListItem item = adapter.getItem(index);
         swipeIntents.call(new Swipe(item, liked));
+        if (liked) {
+            Glide.with(this)
+                    .load(item.getImageUrl())
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                    .preload();
+        }
     }
 
     @Override public void onSwipeDenied(Direction direction) {
@@ -145,49 +189,102 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
             case R.id.menu_stylelist_shortlist:
                 startActivity(new Intent(this, LikedStyleListActivity.class));
                 return true;
+            case R.id.menu_stylelist_test:
+                startActivity(new Intent(this, TestActivity.class));
+                return true;
             default:
                 throw new IllegalStateException("Unidentified menu item " + item.getItemId());
         }
     }
 
+    @OnClick(R.id.stylelist_statusview)
+    public void onStatusClick() {
+        Drawable statusDrawable = statusImageView.getDrawable();
+        if (itemCount == 0) {
+            if (statusDrawable == emptyPreferencesDrawable) {
+                openDrawer();
+            } else if (statusDrawable != loadingDrawable) {
+                if (statusDrawable == reloadDrawable || statusDrawable == emptyDrawable) {
+                    reloadUsecase.execute();
+                }
+                listPresenter.detachView(true);
+                listPresenter.attachView(this);
+            }
+        }
+
+    }
+
     @OnClick(R.id.stylelist_fab_undo)
     public void undo() {
+        StyleListItem item = (StyleListItem) cards.reverse();
+        if (item != null) {
+            itemCount++;
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            FirebaseDatabase.getInstance().getReference(String.format("sessions/%s/styles/liked/%s", userId, item.getId())).setValue(null);
+        }
+    }
+
+    @OnClick(R.id.stylelist_fab_dislike)
+    public void dislike() {
+        if (itemCount > 0) {
+            cards.discard(Direction.BottomLeft);
+        }
+    }
+
+    @OnClick(R.id.stylelist_fab_like)
+    public void like() {
+        if (itemCount > 0) {
+            cards.discard(Direction.TopRight);
+        }
+    }
+
+    @OnClick(R.id.stylelist_fab_share)
+    public void share() {
 
     }
 
     private void openDrawer() {
         drawerLayout.openDrawer(GravityCompat.END);
+        onDrawerOpened(drawerLayout);
     }
 
     @OnClick(R.id.drawer_stylelist_ibutton_close)
     public void closeDrawer() {
         drawerLayout.closeDrawer(GravityCompat.END);
+        onDrawerClosed(drawerLayout);
     }
 
     @Override public void clearCards() {
+        itemCount = 0;
         adapter.clear();
         cards.init(true);
     }
 
     @Override public void showLoading() {
-        Toast.makeText(this, "Loading", Toast.LENGTH_SHORT).show();
+        statusImageView.setImageDrawable(loadingDrawable);
     }
 
     @Override public void showCards(List<StyleListItem> items) {
+        statusImageView.setImageDrawable(reloadDrawable);
+        itemCount = items.size();
         cards.init(false);
         adapter.addAll(items);
     }
 
     @Override public void showEmpty() {
-        Toast.makeText(this, "Empty", Toast.LENGTH_SHORT).show();
+        statusImageView.setImageDrawable(emptyDrawable);
+    }
+
+    private void showEmptyPreferences() {
+        statusImageView.setImageDrawable(emptyPreferencesDrawable);
     }
 
     @Override public void showTimedOut() {
-        Toast.makeText(this, "TimedOut", Toast.LENGTH_SHORT).show();
+        statusImageView.setImageDrawable(timeOutDrawable);
     }
 
     @Override public void showError() {
-        Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
+        statusImageView.setImageDrawable(errorDrawable);
     }
 
     @Override public void onDrawerSlide(View drawerView, float slideOffset) {
@@ -196,9 +293,15 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
 
     @Override public void onDrawerOpened(View drawerView) {
         swipeListener.detachView(false);
+        drawerSubscriptions.addAll(
+                RxRadioGroup.checkedChanges(gender).map(Gender::fromResId).subscribe(genderPreference.asAction()),
+                RxRadioGroup.checkedChanges(theme).map(FilterTheme::fromResId).subscribe(themePreference.asAction()),
+                RxRadioGroup.checkedChanges(hairLength).map(HairLength::fromResId).subscribe(hairLengthPreference.asAction())
+        );
     }
 
     @Override public void onDrawerClosed(View drawerView) {
+        drawerSubscriptions.clear();
         swipeListener.attachView(this);
     }
 
@@ -210,5 +313,28 @@ public class StyleListActivity extends NyuyuActivity implements CardStackView.Ca
         return swipeIntents.asObservable();
     }
 
+    @Override protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(ITEM_COUNT_KEY, itemCount);
+    }
+
+    @Override protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState != null)
+            itemCount = savedInstanceState.getInt(ITEM_COUNT_KEY, 0);
+    }
+
+    @OnClick(R.id.drawer_stylelist_button_close)
+    public void drawerDone() {
+        drawerLayout.addDrawerListener(this);
+        HairLength userHairLength = hairLengthPreference.get();
+        Gender userGender = genderPreference.get();
+        FilterTheme userFilterTheme = themePreference.get();
+        if (userFilterTheme == null || userGender == null || userHairLength == null) {
+            Toast.makeText(this, "Please choose hairstyle preferences", Toast.LENGTH_SHORT).show();
+        } else {
+            closeDrawer();
+        }
+    }
 }
 

@@ -1,5 +1,6 @@
 package in.nyuyu.android.style;
 
+import com.firebase.geofire.GeoLocation;
 import com.google.firebase.auth.FirebaseUser;
 import com.jakewharton.rxrelay.PublishRelay;
 
@@ -25,6 +26,7 @@ import static in.nyuyu.android.style.StyleListViewState.EMPTY;
 import static in.nyuyu.android.style.StyleListViewState.ERROR;
 import static in.nyuyu.android.style.StyleListViewState.LOADED;
 import static in.nyuyu.android.style.StyleListViewState.LOADING;
+import static in.nyuyu.android.style.StyleListViewState.TIMED_OUT;
 
 /**
  * Created by Vinay on 20/09/16.
@@ -59,7 +61,6 @@ public class StyleListModel {
                     .map(FirebaseUser::getUid)
                     .flatMapObservable(
                             userId -> parametersQuery.execute(userId)
-                                    .distinctUntilChanged()
                                     .switchMap(styleListFilterParameters -> lastSeenStyleIdQuery.execute(userId, styleListFilterParameters)
                                             .toObservable()
                                             .flatMap(startAtStyleId -> Observable.zip(
@@ -74,8 +75,8 @@ public class StyleListModel {
                                                         }
                                                         return styles;
                                                     })
-                                                    .map(styles -> styles.isEmpty() ? create(EMPTY) : create(LOADED, styles))
-                                                    .timeout(TIMEOUT, TimeUnit.SECONDS))
+                                                    .map(styles -> styles.isEmpty() ? create(EMPTY) : create(LOADED, styles)))
+                                            .timeout(() -> Observable.timer(TIMEOUT, TimeUnit.SECONDS), styles -> Observable.never(), Observable.just(create(TIMED_OUT)))
                                             .startWith(create(LOADING))))
                     .subscribeOn(Schedulers.computation())
                     .observeOn(AndroidSchedulers.mainThread())

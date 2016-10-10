@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 import in.nyuyu.android.commons.queries.CurrentUserQuery;
 import in.nyuyu.android.style.queries.LikedStyleListQuery;
+import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -16,6 +17,7 @@ import timber.log.Timber;
 import static in.nyuyu.android.style.values.LikedStyleListViewModel.create;
 import static in.nyuyu.android.style.values.LikedStyleListViewState.EMPTY;
 import static in.nyuyu.android.style.values.LikedStyleListViewState.LOADING;
+import static in.nyuyu.android.style.values.LikedStyleListViewState.TIMED_OUT;
 
 /**
  * Created by Vinay on 20/09/16.
@@ -40,8 +42,10 @@ public class LikedStyleListPresenter {
         subscription = userQuery.execute()
                 .map(FirebaseUser::getUid)
                 .flatMapObservable(userId -> listQuery.execute(userId)
+                        .take(1)
                         .map(items -> items.isEmpty() ? create(EMPTY) : create(items))
-                        .timeout(TIMEOUT, TimeUnit.SECONDS)
+                        .timeout(() -> Observable.timer(TIMEOUT, TimeUnit.SECONDS), styles -> Observable.never(),
+                                Observable.just(create(TIMED_OUT)))
                         .startWith(create(LOADING)))
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())

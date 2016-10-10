@@ -24,9 +24,26 @@ public class LikedStyleListAdapter extends RecyclerView.Adapter<LikedStyleListAd
     private final LayoutInflater inflater;
     private final Context context;
 
+    private OnItemClickListener listener;
+
+    public StyleListItem get(int position) {
+        return items.get(position);
+    }
+
+    public void remove(int position) {
+        items.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    // Define the listener interface
+    public interface OnItemClickListener {
+        void onItemClick(View itemView, int position);
+    }
+
     public LikedStyleListAdapter(Context context) {
         this.context = context;
         this.inflater = LayoutInflater.from(context);
+        this.listener = (OnItemClickListener) context;
     }
 
     @Override public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -38,7 +55,7 @@ public class LikedStyleListAdapter extends RecyclerView.Adapter<LikedStyleListAd
         Glide.with(context)
                 .load(item.getImageUrl())
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                .centerCrop()
+                .fitCenter()
                 .into(holder.image);
     }
 
@@ -51,12 +68,38 @@ public class LikedStyleListAdapter extends RecyclerView.Adapter<LikedStyleListAd
         notifyDataSetChanged();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
         ImageView image;
+        ImageView delete;
 
         public ViewHolder(View itemView) {
             super(itemView);
             image = (ImageView) itemView.findViewById(R.id.item_likedstyle_iview);
+            delete = (ImageView) itemView.findViewById(R.id.item_likedstyle_iview_delete);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Triggers click upwards to the adapter on click
+                    if (listener != null) {
+                        int position = getAdapterPosition();
+                        if (listener != null && position != RecyclerView.NO_POSITION) {
+                            listener.onItemClick(itemView, position);
+                        }
+                    }
+                }
+            });
+            delete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Triggers click upwards to the adapter on click
+                    if (listener != null) {
+                        int position = getAdapterPosition();
+                        if (listener != null && position != RecyclerView.NO_POSITION) {
+                            listener.onItemClick(delete, position);
+                        }
+                    }
+                }
+            });
         }
     }
 }

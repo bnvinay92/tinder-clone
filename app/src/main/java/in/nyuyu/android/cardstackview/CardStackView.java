@@ -58,6 +58,7 @@ public class CardStackView extends RelativeLayout {
     public void init(boolean resetIndex) {
         if (resetIndex) {
             topIndex = 0;
+            lastDirection = null;
         }
 
         removeAllViews();
@@ -225,7 +226,7 @@ public class CardStackView extends RelativeLayout {
         });
     }
 
-    public void reverse() {
+    public Object reverse() {
         if (lastDirection != null) {
             topIndex--;
 
@@ -241,7 +242,8 @@ public class CardStackView extends RelativeLayout {
                             .setOnTouchListener(onTouchListener);
                 }
             });
-        }
+            return adapter.getItem(topIndex);
+        } else return null;
     }
 
     public int getTopIndex() {

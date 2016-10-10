@@ -13,7 +13,8 @@ import rx.Single;
  */
 public class LastSeenStyleIdQuery {
 
-    public static final String PATH = "sessions/%s/styles/last_seen/%s";
+    public static final String PATH = "sessions/%s/styles/last_seen/%s/item/id";
+    public static final String WRITE_PATH = "sessions/%s/styles/last_seen/%s";
     private final DatabaseReference databaseReference;
 
     @Inject public LastSeenStyleIdQuery(DatabaseReference databaseReference) {
@@ -21,16 +22,16 @@ public class LastSeenStyleIdQuery {
     }
 
     public Single<String> execute(String userId, String styleListFilterParameters) {
-        return Rx.once(databaseReference.child(path(userId, styleListFilterParameters)))
-                .map(snapshot -> snapshot.getValue(Swipe.class))
-                .map(swipe -> swipe == null ? "-1" : String.valueOf(swipe.getItem().getId() + 1));
+        return Rx.once(databaseReference.child(String.format(PATH, userId, styleListFilterParameters)))
+                .map(snapshot -> snapshot.getValue(Long.class))
+                .map(id -> id == null ? "-1" : String.valueOf(id + 1));
     }
 
     public void update(String userId, String styleListFilterParameters, Swipe swipe) {
-        databaseReference.child(path(userId, styleListFilterParameters)).setValue(swipe);
+        databaseReference.child(String.format(WRITE_PATH, userId, styleListFilterParameters)).setValue(swipe);
     }
 
-    public static String path(String userId, String styleListFilterParameters) {
-        return String.format(PATH, userId, styleListFilterParameters);
+    public void delete(String userId, String styleListFilterParameters) {
+        databaseReference.child(String.format(WRITE_PATH, userId, styleListFilterParameters)).setValue(null);
     }
 }

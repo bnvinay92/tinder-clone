@@ -5,6 +5,8 @@
     android:layout_height="match_parent"
     android:layout_gravity="end"
     android:background="@android:color/white"
+    android:clickable="true"
+    android:importantForAccessibility="no"
     android:orientation="vertical">
 
     <FrameLayout
@@ -32,7 +34,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/drawer_stylelist_subtitle_height"
-        android:background="@android:color/background_dark"
+        android:background="#fff3f3f3"
         android:paddingBottom="@dimen/drawer_stylelist_subtitle_padding_bottom">
 
         <TextView
@@ -42,45 +44,47 @@
             android:layout_gravity="start|bottom"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:text="@string/drawer_stylelist_tview_hairlength_text"
-            android:textAppearance="@style/TextAppearance.AppCompat.Small.Inverse" />
+            android:textAllCaps="true"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
     </FrameLayout>
 
     <RadioGroup
         android:id="@+id/drawer_stylelist_rgroup_hairlength"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/drawer_stylelist_radiogroup_height"
-        android:orientation="horizontal"
-        android:padding="@dimen/activity_horizontal_margin">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="8dp"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingTop="8dp">
+
+        <RadioButton
+            android:id="@+id/drawer_stylelist_rbutton_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:text="All" />
 
         <RadioButton
             android:id="@+id/drawer_stylelist_rbutton_short"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="start"
             android:text="Short" />
 
-        <android.support.v4.widget.Space
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
 
         <RadioButton
             android:id="@+id/drawer_stylelist_rbutton_medium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="start"
             android:text="Medium" />
-
-        <android.support.v4.widget.Space
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
 
         <RadioButton
             android:id="@+id/drawer_stylelist_rbutton_long"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="start"
             android:text="Long" />
     </RadioGroup>
 
@@ -88,7 +92,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/drawer_stylelist_subtitle_height"
-        android:background="@android:color/background_dark"
+        android:background="#fff3f3f3"
         android:paddingBottom="@dimen/drawer_stylelist_subtitle_padding_bottom">
 
         <TextView
@@ -98,27 +102,33 @@
             android:layout_gravity="start|bottom"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:text="@string/drawer_stylelist_tview_gender_text"
-            android:textAppearance="@style/TextAppearance.AppCompat.Small.Inverse" />
+            android:textAllCaps="true"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
     </FrameLayout>
 
     <RadioGroup
+        android:id="@+id/drawer_stylelist_rgroup_gender"
         android:layout_width="match_parent"
         android:layout_height="@dimen/drawer_stylelist_radiogroup_height"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="@dimen/activity_horizontal_margin">
+        android:paddingBottom="8dp"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingTop="8dp">
 
         <RadioButton
-            android:layout_width="wrap_content"
+            android:id="@+id/drawer_stylelist_rbutton_male"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:text="Male" />
 
 
         <RadioButton
-            android:layout_width="wrap_content"
+            android:id="@+id/drawer_stylelist_rbutton_female"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:text="Female" />
     </RadioGroup>
@@ -126,7 +136,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/drawer_stylelist_subtitle_height"
-        android:background="@android:color/background_dark"
+        android:background="#fff3f3f3"
         android:paddingBottom="@dimen/drawer_stylelist_subtitle_padding_bottom">
 
         <TextView
@@ -136,52 +146,42 @@
             android:layout_gravity="start|bottom"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:text="@string/drawer_stylelist_tview_theme_text"
-            android:textAppearance="@style/TextAppearance.AppCompat.Small.Inverse" />
+            android:textAllCaps="true"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
     </FrameLayout>
 
     <RadioGroup
+        android:id="@+id/drawer_stylelist_rgroup_theme"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/activity_horizontal_margin">
+        android:layout_height="@dimen/drawer_stylelist_radiogroup_height"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingBottom="8dp"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingTop="8dp">
 
         <RadioButton
-            android:layout_width="match_parent"
+            android:id="@+id/drawer_stylelist_rbutton_formal"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
             android:text="Formal" />
 
-        <android.support.v4.widget.Space
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
 
         <RadioButton
-            android:layout_width="match_parent"
+            android:id="@+id/drawer_stylelist_rbutton_casual"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
             android:text="Casual" />
 
-        <android.support.v4.widget.Space
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <RadioButton
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="Low Maintenance" />
-
-        <android.support.v4.widget.Space
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <RadioButton
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="Indie" />
     </RadioGroup>
+
+    <Button
+        android:layout_gravity="center"
+        android:id="@+id/drawer_stylelist_button_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Done" />
 </LinearLayout>

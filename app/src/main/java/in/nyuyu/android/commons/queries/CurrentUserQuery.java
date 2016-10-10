@@ -22,4 +22,8 @@ public class CurrentUserQuery {
     public Single<FirebaseUser> execute() {
         return Rx.user(firebaseAuth);
     }
+
+    public String getUserId() {
+        return firebaseAuth.getCurrentUser().getUid();
+    }
 }

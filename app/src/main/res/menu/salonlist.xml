@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_salonlist_filter"
+        android:icon="@drawable/ic_filter_list_black_24dp"
+        android:orderInCategory="200"
+        android:title="@string/menu_salonlist_filter_title"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_salonlist_sort"
+        android:icon="@drawable/ic_sort_black_24dp"
+        android:orderInCategory="400"
+        android:title="@string/menu_salonlist_sort_title"
+        app:showAsAction="ifRoom" />
+
+</menu>

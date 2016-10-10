@@ -8,6 +8,7 @@ import android.os.Parcelable;
  */
 public class StyleListItem implements Parcelable {
     public static final String EXTRA = "in.nyuyu.android.extras.EXTRA_STYLE_LIST_ITEM";
+    public static final String EXTRA_ID = "in.nyuyu.android.extras.EXTRA_STYLE_ID";
     private Long id;
     private String imageUrl;
     private Long likeCount;

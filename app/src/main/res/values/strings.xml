@@ -8,4 +8,7 @@
     <string name="drawer_stylelist_tview_theme_text">Theme</string>
     <string name="drawer_stylelist_ibutton_close_contentDescription">Closes filters</string>
     <string name="menu_likedstylelist_share_title">Share this list</string>
+    <string name="facebook_app_id">1792612547651385</string>
+    <string name="menu_salonlist_filter_title">Filter</string>
+    <string name="menu_salonlist_sort_title">Sort</string>
 </resources>

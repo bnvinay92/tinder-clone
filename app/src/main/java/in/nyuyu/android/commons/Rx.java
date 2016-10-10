@@ -1,5 +1,7 @@
 package in.nyuyu.android.commons;
 
+import com.facebook.AccessToken;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -11,9 +13,11 @@ import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 
 import rx.AsyncEmitter;
+import rx.Completable;
 import rx.Observable;
 import rx.Single;
 import rx.functions.Action1;
+import timber.log.Timber;
 
 /**
  * Created by Vinay on 19/09/16.
@@ -26,16 +30,23 @@ public class Rx {
     public static Single<FirebaseUser> signInAnonymously(FirebaseAuth firebaseAuth) {
         return Observable.fromEmitter(new Action1<AsyncEmitter<FirebaseUser>>() {
             @Override public void call(AsyncEmitter<FirebaseUser> tAsyncEmitter) {
-                firebaseAuth.signInAnonymously().addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        tAsyncEmitter.onNext(task.getResult().getUser());
-                        tAsyncEmitter.onCompleted();
-                    } else {
-                        tAsyncEmitter.onError(task.getException());
-                    }
-                });
+                firebaseAuth.signInAnonymously()
+                        .addOnSuccessListener(authResult -> {
+                            tAsyncEmitter.onNext(authResult.getUser());
+                            tAsyncEmitter.onCompleted();
+                        })
+                        .addOnFailureListener(tAsyncEmitter::onError);
             }
         }, AsyncEmitter.BackpressureMode.LATEST).toSingle();
+    }
+
+    public static Completable signInWithFacebook(AccessToken accessToken) {
+        return Completable.fromEmitter(producer -> {
+            FirebaseAuth.getInstance().getCurrentUser()
+                    .linkWithCredential(FacebookAuthProvider.getCredential(accessToken.getToken()))
+                    .addOnSuccessListener(authResult -> producer.onCompleted())
+                    .addOnFailureListener(producer::onError);
+        });
     }
 
     public static Observable<DataSnapshot> values(Query query) {
@@ -87,6 +98,7 @@ public class Rx {
                     emitter.onCompleted();
                 } else {
                     if (databaseError != null) {
+                        Timber.d("Exception class: %s", databaseError.toException().getClass());
                         emitter.onError(databaseError.toException());
                     } else {
                         emitter.onError(new Throwable("Transaction did not commit"));
@@ -94,6 +106,18 @@ public class Rx {
                 }
             }
         }), AsyncEmitter.BackpressureMode.LATEST).toSingle();
+    }
+
+    public static Completable set(DatabaseReference databaseReference, Object payload) {
+        return Completable.fromEmitter(emitter -> {
+            databaseReference.setValue(payload, (databaseError, databaseReference1) -> {
+                if (databaseError != null) {
+                    emitter.onError(databaseError.toException());
+                } else {
+                    emitter.onCompleted();
+                }
+            });
+        });
     }
 
     public interface TransactionExecutor {
